@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Firma Digital</title>
+   
+    <link rel="stylesheet" href="css/bootstrap-min.css">
+    <link rel="stylesheet" href="app.css" type="text/css" />
+
+    <style>
+        /* Clon exacto del app.css original para la pestaña Registrar */
+        #imagediv-registrar {
+            padding: 0px;
+            margin: 0 auto;
+            width: 500px;
+            height: 500px;
+            overflow: hidden;
+            border: 1px solid rgba(51, 122, 183, 0.39);
+            display: table;
+        }
+        #imagediv-registrar div {
+            text-align: center;
+            vertical-align: middle;
+            height: 500px;
+            background: #d3d3d3;
+            display: table-cell;
+        }
+        #imagediv-registrar img {
+            width: 100%;
+            height: 500px;
+        }
+        #saveAndFormats-reg {
+            position: relative;
+            left: 660px;
+            top: -750px;
+            width: 135px;
+        }
+        
+        /* Ajustes pequeños para que los inputs se vean bien en la columna derecha de 135px */
+        .sidebar-input-group label { font-size: 12px; margin-bottom: 2px; }
+        .sidebar-input-group input { margin-bottom: 10px; width: 100%; }
+        .sidebar-input-group span { font-size: 11px; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+    <div id="Container">
+        <nav class="navbar navbar-inverse">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <div class="navbar-brand" href="#" style="color: white;">Firma Digital</div>
+            </div>
+            <ul class="nav navbar-nav">
+              <li id="Reader" class="active">
+                <a href="#" style="color: white;" onclick="toggle_visibility(['content-reader','content-capture','content-registrar']); setTabActive('Reader')">
+                    Selector de Dispositivos</a>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav">
+              <li id="Capture" class="">
+                <a href="#" style="color: white;" onclick="toggle_visibility(['content-capture','content-reader','content-registrar']); setTabActive('Capture')">
+                    Firmar</a>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav">
+              <li id="RegistrarTab" class="">
+                <a href="#" style="color: white;" onclick="toggle_visibility(['content-registrar','content-capture','content-reader']); setTabActive('RegistrarTab')">
+                    Registrar</a>
+              </li>
+            </ul>                       
+          </div>
+        </nav>
+       <div id="Scores">
+           <h5>Calidad de Escaneo : <input type="text" id="qualityInputBox" size="20" style="background-color:#DCDCDC;text-align:center;" disabled></h5> 
+       </div>
+
+        <!-- ========================================== -->
+        <!-- 1. PESTAÑA: FIRMAR (Antigua Capture)       -->
+        <!-- ========================================== -->
+        <div id="content-capture" style="display : none;">    
+            <div id="status"></div>            
+            <div id="imagediv"></div>
+            <div id="contentButtons">
+                <table width=70% align="center">
+                    <tr>
+                        <td>
+                            <input type="button" class="btn btn-primary" id="clearButton" value="Limpiar Huella" onclick="Javascript:onClear()">
+                        </td>
+                        <td>
+                            <input type="button" class="btn btn-primary" id="start" value="Escanear" onclick="Javascript:onStart()">
+                        </td>
+                        <td>
+                           <input type="button" class="btn btn-primary" id="stop" value="Parar" onclick="Javascript:onStop()">
+                        </td>
+                    </tr>
+                </table>
+                <!-- Botón de Pruebas (Test) -->
+                <div style="margin-top: 10px;">
+                    <label class="btn btn-warning btn-xs" style="font-weight: normal;">
+                        Subir Imagen (Test)
+                        <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
+                    </label>
+                </div>
+            </div>
+
+            <div id="imageGallery"></div>
+            <div id="deviceInfo"></div>
+
+            <!-- CUADRO DERECHO (Formatos y Formularios) -->
+            <div id="saveAndFormats">
+                <form name="myForm" style ="border : solid grey;padding:5px; text-align:center;">
+                  <b>Formatos:</b><br>
+                  <table align="center">
+                    <tr data-toggle="tooltip" title="Se capturará en formato .png">
+                      <td>
+                        <input type="checkbox" name="PngImage" checked="true" value="4" onclick="return false;"> PNG
+                      </td>
+                    </tr>
+                  </table>
+                </form>
+              
+                <!-- Campos Firmar: Colocados DENTRO del panel derecho -->
+                <div class="sidebar-input-group" style="margin-top: 20px; text-align: left;">
+                    <label for="id_recepcion" style="font-weight: bold;">ID Recepción:</label>
+                    <input type="text" id="id_recepcion" class="form-control input-sm" placeholder="Ej: 209-2026">
+                    
+                    <input type="button" class="btn btn-success btn-sm" style="width: 100%; white-space: normal;" value="Enviar Huella" onclick="enviarHuella()">
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 2. PESTAÑA: REGISTRAR (Nueva Vista)        -->
+        <!-- ========================================== -->
+        <div id="content-registrar" style="display : none;">    
+            <div id="status"></div>            
+            <div id="imagediv-registrar"></div>
+            <div id="contentButtons-registrar">
+                <table width=70% align="center">
+                    <tr>
+                        <td>
+                            <input type="button" class="btn btn-primary" id="clearButton-reg" value="Limpiar Huella" onclick="Javascript:onClear(); limpiarRegistrar();">
+                        </td>
+                        <td>
+                            <input type="button" class="btn btn-primary" id="start-reg" value="Escanear" onclick="Javascript:onStart()">
+                        </td>
+                        <td>
+                           <input type="button" class="btn btn-primary" id="stop-reg" value="Parar" onclick="Javascript:onStop()">
+                        </td>
+                    </tr>
+                </table>
+                <!-- Botón de Pruebas (Test) -->
+                <div style="margin-top: 10px;">
+                    <label class="btn btn-warning btn-xs" style="font-weight: normal;">
+                        Subir Imagen (Test)
+                        <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Divs fantasma para respetar el espacio -->
+            <div style="height: 100px; width: 100%;"></div>
+            <div style="height: 100px; width: 100%;"></div>
+
+            <!-- CUADRO DERECHO REGISTRAR (Formatos y Formularios) -->
+            <div id="saveAndFormats-reg">
+                <form style ="border : solid grey;padding:5px; text-align:center;">
+                  <b>Formatos:</b><br>
+                  <table align="center">
+                    <tr data-toggle="tooltip" title="Se capturará en formato .png">
+                      <td>
+                        <input type="checkbox" checked="true" onclick="return false;"> PNG
+                      </td>
+                    </tr>
+                  </table>
+                </form>
+              
+                <!-- Campos Registrar: Colocados DENTRO del panel derecho (ID CLIENTE ELIMINADO) -->
+                <div class="sidebar-input-group" style="margin-top: 15px; text-align: left;">
+                    
+                    <label for="rut_cliente" style="font-weight: bold;">RUT del Cliente:</label>
+                    <input type="text" id="rut_cliente" class="form-control input-sm" placeholder="Ej: 12345678-9" maxlength="10">
+                    <span id="rut_error" style="display:none; color:red; font-weight:bold;">RUT inválido</span>
+                    
+                    <label for="nombre_cliente" style="font-weight: bold;">Nombre:</label>
+                    <input type="text" id="nombre_cliente" class="form-control input-sm" maxlength="50">
+                    
+                    <input type="button" class="btn btn-success btn-sm" style="width: 100%; white-space: normal;" value="Registrar Huella" onclick="registrarHuella()">
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 3. PESTAÑA: SELECTOR DE DISPOSITIVOS       -->
+        <!-- ========================================== -->
+        <div id="content-reader">  
+            <h4>Seleccione el Dispositivo:</h4>
+            <select class="form-control" id="readersDropDown" onchange="selectChangeEvent()">
+            </select>
+            <div id="readerDivButtons">
+                <table width=70% align="center">
+                        <tr>
+                            <td>
+                                <input type="button" class="btn btn-primary" id="refreshList" value="Actualizar Lista" 
+                                    onclick="Javascript:readersDropDownPopulate(false)">
+                            </td>
+                            <td>
+                                <input type="button" class="btn btn-primary" id="capabilities" value="Capacidades"
+                                data-toggle="modal" data-target="#myModal" onclick="Javascript:populatePopUpModal()">
+                            </td>  
+                        </tr>
+                </table>
+
+              <div class="modal fade" id="myModal" role="dialog">
+                <div class="modal-dialog">
+                  <div class="modal-content" id="modalContent" >
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">Información del Dispositivo</h4>
+                    </div>
+                    <div class="modal-body" id="ReaderInformationFromDropDown">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/jquery.min.js"></script> 
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="scripts/es6-shim.js"></script>
+    <script src="scripts/websdk.client.bundle.min.js"></script>
+    <script src="scripts/fingerprint.sdk.min.js"></script>
+    <script src="app.js"></script>
+        
+</body>
+</html>
