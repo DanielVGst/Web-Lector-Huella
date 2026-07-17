@@ -7,39 +7,109 @@
     <link rel="stylesheet" href="css/bootstrap-min.css">
     <link rel="stylesheet" href="app.css" type="text/css" />
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
     <style>
-        /* Clon exacto del app.css original para la pestaña Registrar */
-        #imagediv-registrar {
-            padding: 0px;
-            margin: 0 auto;
-            width: 500px;
-            height: 500px;
-            overflow: hidden;
-            border: 1px solid rgba(51, 122, 183, 0.39);
-            display: table;
-        }
-        #imagediv-registrar div {
-            text-align: center;
-            vertical-align: middle;
-            height: 500px;
-            background: #d3d3d3;
-            display: table-cell;
-        }
-        #imagediv-registrar img {
-            width: 100%;
-            height: 500px;
-        }
-        #saveAndFormats-reg {
-            position: relative;
-            left: 660px;
-            top: -750px;
-            width: 135px;
-        }
         
-        /* Ajustes pequeños para que los inputs se vean bien en la columna derecha de 135px */
-        .sidebar-input-group label { font-size: 12px; margin-bottom: 2px; }
-        .sidebar-input-group input { margin-bottom: 10px; width: 100%; }
-        .sidebar-input-group span { font-size: 11px; margin-bottom: 10px; display: block; }
+        body { background-color: #f4f6f9; }
+
+        #Container {
+            width: 100% !important;
+            max-width: 1100px !important;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            padding-bottom: 20px;
+            overflow: hidden;
+        }
+
+        /* Nueva Cabecera Moderna (Dark Slate Gradient) */
+        .navbar-inverse {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: none;
+            border-radius: 0;
+            margin-bottom: 20px;
+        }
+        .navbar-inverse .navbar-brand { color: #f8fafc !important; font-weight: 600; font-size: 20px; letter-spacing: 0.5px; }
+        .navbar-inverse .nav > li > a { color: #cbd5e1 !important; font-weight: 500; transition: color 0.3s ease; }
+        .navbar-inverse .nav > li > a:hover { color: #ffffff !important; background-color: rgba(255,255,255,0.1); }
+        .navbar-inverse .nav > li.active > a { background-color: #0ea5e9 !important; color: white !important; font-weight: 600; }
+
+        /* Estilos de Botones Animados (Hover) */
+        .btn {
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .btn:active { transform: translateY(0); box-shadow: none; }
+        
+        .material-symbols-outlined { font-size: 20px; }
+
+        #TopControlPanel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 0 20px 20px 20px;
+            border: 1px solid #e2e8f0;
+        }
+        #Scores { margin: 0; border: none !important; width: auto; }
+        
+        #status { display: none !important; } 
+        #global-status {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .panel-derecho {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+        }
+
+        #imagediv, #imagediv-registrar {
+            padding: 0px; margin: 0 auto;
+            width: 450px; height: 450px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: table;
+            background: #f8fafc;
+        }
+        #imagediv div, #imagediv-registrar div { display: table-cell; vertical-align: middle; background: transparent; }
+        #imagediv img, #imagediv-registrar img { width: 100%; height: auto; max-height: 450px; }
+
+        .visor-huellas-container {
+            display: flex; justify-content: space-between;
+            margin-top: 15px; margin-bottom: 15px;
+        }
+        .thumb-box {
+            width: 31%; height: 90px;
+            border: 2px dashed #cbd5e1; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; overflow: hidden;
+            color: #94a3b8; font-size: 24px; font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .thumb-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -47,184 +117,192 @@
         <nav class="navbar navbar-inverse">
           <div class="container-fluid">
             <div class="navbar-header">
-              <div class="navbar-brand" href="#" style="color: white;">Firma Digital</div>
+              <div class="navbar-brand">
+                  <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">fingerprint</span>
+                  Firma Digital Integrada
+              </div>
             </div>
             <ul class="nav navbar-nav">
               <li id="Reader" class="active">
-                <a href="#" style="color: white;" onclick="toggle_visibility(['content-reader','content-capture','content-registrar']); setTabActive('Reader')">
-                    Selector de Dispositivos</a>
+                <a href="#" onclick="toggle_visibility(['content-reader','content-capture','content-registrar']); setTabActive('Reader')">
+                    <span class="material-symbols-outlined align-middle">settings_input_component</span> Dispositivos</a>
               </li>
-            </ul>
-            <ul class="nav navbar-nav">
               <li id="Capture" class="">
-                <a href="#" style="color: white;" onclick="toggle_visibility(['content-capture','content-reader','content-registrar']); setTabActive('Capture')">
-                    Firmar</a>
+                <a href="#" onclick="toggle_visibility(['content-capture','content-reader','content-registrar']); setTabActive('Capture')">
+                    <span class="material-symbols-outlined align-middle">edit_document</span> Firmar Recepción</a>
+              </li>
+              <li id="RegistrarTab" class="">
+                <a href="#" onclick="toggle_visibility(['content-registrar','content-capture','content-reader']); setTabActive('RegistrarTab')">
+                    <span class="material-symbols-outlined align-middle">person_add</span> Registrar Cliente</a>
               </li>
             </ul>
-            <ul class="nav navbar-nav">
-              <li id="RegistrarTab" class="">
-                <a href="#" style="color: white;" onclick="toggle_visibility(['content-registrar','content-capture','content-reader']); setTabActive('RegistrarTab')">
-                    Registrar</a>
-              </li>
-            </ul>                       
           </div>
         </nav>
-       <div id="Scores">
-           <h5>Calidad de Escaneo : <input type="text" id="qualityInputBox" size="20" style="background-color:#DCDCDC;text-align:center;" disabled></h5> 
-       </div>
 
-        <!-- ========================================== -->
-        <!-- 1. PESTAÑA: FIRMAR (Antigua Capture)       -->
-        <!-- ========================================== -->
-        <div id="content-capture" style="display : none;">    
-            <div id="status"></div>            
-            <div id="imagediv"></div>
-            <div id="contentButtons">
-                <table width=70% align="center">
-                    <tr>
-                        <td>
-                            <input type="button" class="btn btn-primary" id="clearButton" value="Limpiar Huella" onclick="Javascript:onClear()">
-                        </td>
-                        <td>
-                            <input type="button" class="btn btn-primary" id="start" value="Escanear" onclick="Javascript:onStart()">
-                        </td>
-                        <td>
-                           <input type="button" class="btn btn-primary" id="stop" value="Parar" onclick="Javascript:onStop()">
-                        </td>
-                    </tr>
-                </table>
-                <!-- Botón de Pruebas (Test) -->
-                <div style="margin-top: 10px;">
-                    <label class="btn btn-warning btn-xs" style="font-weight: normal;">
-                        Subir Imagen (Test)
-                        <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
-                    </label>
+        <!-- PANEL GLOBAL  -->
+        <div id="TopControlPanel">
+            <div id="Scores">
+                <h5 style="color:#475569; margin:0; font-weight: 600; display:flex; align-items:center; gap:10px;">
+                    <span class="material-symbols-outlined">high_quality</span> Calidad de Escaneo: 
+                    <input type="text" id="qualityInputBox" style="background-color:#fff; border:2px solid #e2e8f0; border-radius:6px; text-align:center; font-weight:bold; width: 100px; padding: 4px;" disabled>
+                </h5>
+            </div>
+            <div id="global-status"></div>
+        </div>
+
+        <!-- PESTAÑA: FIRMAR -->
+        <div id="content-capture" style="display : none; padding: 0 20px;">
+            <div id="status"></div>
+            
+            <div class="row">
+                <div class="col-md-7 text-center">
+                    <div id="imagediv"></div>
+                    <div id="contentButtons" style="margin-top: 20px;">
+                        <input type="button" class="btn btn-default" id="clearButton" value="Limpiar" onclick="Javascript:onClear()">
+                        <button type="button" class="btn btn-primary" id="start" onclick="Javascript:onStart()">
+                            <span class="material-symbols-outlined">sensors</span> Activar Escáner
+                        </button>
+                        <button type="button" class="btn btn-danger" id="stop" onclick="Javascript:onStop()">
+                            <span class="material-symbols-outlined">cancel</span> Parar
+                        </button>
+                        
+                        <div style="margin-top: 15px;">
+                            <label class="btn btn-warning btn-sm" style="font-weight: 500;">
+                                <span class="material-symbols-outlined">upload_file</span> Subir Imagen (Test) 
+                                <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="panel-derecho">
+                        <h4 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #0ea5e9; padding-bottom: 8px; font-weight:bold;">
+                            <span class="material-symbols-outlined align-middle">receipt_long</span> Datos de Recepción
+                        </h4>
+                        
+                        <div style="margin-top: 20px;">
+                            <label for="id_recepcion" style="font-weight: 600; color: #475569;">ID Recepción:</label>
+                            <input type="text" id="id_recepcion" class="form-control input-lg" placeholder="Ej: 12345-2026" style="margin-bottom: 25px; border-radius: 8px;">
+                            
+                            <button type="button" class="btn btn-success btn-lg btn-block" onclick="enviarHuella()">
+                                <span class="material-symbols-outlined">verified</span> Verificar y Firmar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="imageGallery"></div>
-            <div id="deviceInfo"></div>
+            <!-- Ocultos -->
+            <div id="imageGallery" style="display:none;"></div>
+            <div id="deviceInfo" style="display:none;"></div>
+        </div>
 
-            <!-- CUADRO DERECHO (Formatos y Formularios) -->
-            <div id="saveAndFormats">
-                <form name="myForm" style ="border : solid grey;padding:5px; text-align:center;">
-                  <b>Formatos:</b><br>
-                  <table align="center">
-                    <tr data-toggle="tooltip" title="Se capturará en formato .png">
-                      <td>
-                        <input type="checkbox" name="PngImage" checked="true" value="4" onclick="return false;"> PNG
-                      </td>
-                    </tr>
-                  </table>
-                </form>
-              
-                <!-- Campos Firmar: Colocados DENTRO del panel derecho -->
-                <div class="sidebar-input-group" style="margin-top: 20px; text-align: left;">
-                    <label for="id_recepcion" style="font-weight: bold;">ID Recepción:</label>
-                    <input type="text" id="id_recepcion" class="form-control input-sm" placeholder="Ej: 209-2026">
-                    
-                    <input type="button" class="btn btn-success btn-sm" style="width: 100%; white-space: normal;" value="Enviar Huella" onclick="enviarHuella()">
+        <!-- PESTAÑA: REGISTRAR (3 HUELLAS) -->
+        <div id="content-registrar" style="display : none; padding: 0 20px;">    
+            <div id="status"></div>            
+            
+            <div class="row">
+                <div class="col-md-7 text-center">
+                    <div id="imagediv-registrar"></div>
+                    <div id="contentButtons-registrar" style="margin-top: 20px;">
+                        <input type="button" class="btn btn-default" id="clearButton-reg" value="Limpiar" onclick="Javascript:onClear(); limpiarRegistrar();">
+                        <button type="button" class="btn btn-primary" id="start-reg" onclick="Javascript:onStart()">
+                            <span class="material-symbols-outlined">sensors</span> Activar Escáner
+                        </button>
+                        <button type="button" class="btn btn-danger" id="stop-reg" onclick="Javascript:onStop()">
+                            <span class="material-symbols-outlined">cancel</span> Parar
+                        </button>
+                        
+                        <div style="margin-top: 15px;">
+                            <label class="btn btn-warning btn-sm" style="font-weight: 500;">
+                                <span class="material-symbols-outlined">upload_file</span> Subir Imagen (Test) 
+                                <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="panel-derecho">
+                        <h4 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #0ea5e9; padding-bottom: 8px; font-weight:bold;">
+                            <span class="material-symbols-outlined align-middle">badge</span> Datos del Cliente
+                        </h4>
+                        
+                        <div style="margin-top: 20px;">
+                            <label for="rut_cliente" style="font-weight: 600; color: #475569;">RUT:</label>
+                            <input type="text" id="rut_cliente" class="form-control" placeholder="Ej: 12345678-9" maxlength="10" style="border-radius: 6px;">
+                            <span id="rut_error" style="display:none; color:#e74c3c; font-size: 12px; font-weight:bold; margin-bottom: 5px;">RUT inválido</span>
+                            <br>
+
+                            <label for="nombre_cliente" style="font-weight: 600; color: #475569;">Nombre Completo:</label>
+                            <input type="text" id="nombre_cliente" class="form-control" maxlength="50" style="margin-bottom: 20px; border-radius: 6px;">
+                            
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
+                                <h5 style="font-weight: bold; text-align: center; color: #334155; margin-top: 0;">Captura Múltiple (3 Tomas)</h5>
+                                
+                                <button type="button" class="btn btn-info btn-block" onclick="confirmarHuellaIndividual()">
+                                    <span class="material-symbols-outlined">add_a_photo</span> Guardar Toma Actual
+                                </button>
+
+                                <div class="visor-huellas-container">
+                                    <div id="thumb-1" class="thumb-box">1</div>
+                                    <div id="thumb-2" class="thumb-box">2</div>
+                                    <div id="thumb-3" class="thumb-box">3</div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-default btn-xs pull-right" onclick="reiniciarTomas()" style="margin-top:-10px; color:#64748b;">
+                                    <span class="material-symbols-outlined" style="font-size:14px;">delete</span> Borrar Tomas
+                                </button>
+                                <div class="clearfix"></div>
+                            </div>
+
+                            <button type="button" class="btn btn-success btn-lg btn-block" onclick="registrarHuella()" id="btn-registrar-final" style="margin-top: 15px;">
+                                <span class="material-symbols-outlined">person_add</span> Enrolar Cliente
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 2. PESTAÑA: REGISTRAR (Nueva Vista)        -->
-        <!-- ========================================== -->
-        <div id="content-registrar" style="display : none;">    
-            <div id="status"></div>            
-            <div id="imagediv-registrar"></div>
-            <div id="contentButtons-registrar">
-                <table width=70% align="center">
-                    <tr>
-                        <td>
-                            <input type="button" class="btn btn-primary" id="clearButton-reg" value="Limpiar Huella" onclick="Javascript:onClear(); limpiarRegistrar();">
-                        </td>
-                        <td>
-                            <input type="button" class="btn btn-primary" id="start-reg" value="Escanear" onclick="Javascript:onStart()">
-                        </td>
-                        <td>
-                           <input type="button" class="btn btn-primary" id="stop-reg" value="Parar" onclick="Javascript:onStop()">
-                        </td>
-                    </tr>
-                </table>
-                <!-- Botón de Pruebas (Test) -->
-                <div style="margin-top: 10px;">
-                    <label class="btn btn-warning btn-xs" style="font-weight: normal;">
-                        Subir Imagen (Test)
-                        <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
-                    </label>
+        <!-- 3. PESTAÑA: SELECTOR DE DISPOSITIVOS -->
+        <div id="content-reader" style="padding: 30px;">
+            <h3 style="text-align: center; color: #1e293b; margin-bottom: 30px; font-weight:bold;">
+                <span class="material-symbols-outlined" style="font-size: 32px; vertical-align: middle;">usb</span> Configuración de Hardware
+            </h3>
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <div class="panel-derecho" style="text-align: center;">
+                        <label style="color:#475569; font-weight:600; font-size:16px;">Seleccione el Lector Conectado:</label>
+                        <select class="form-control input-lg" id="readersDropDown" onchange="selectChangeEvent()" style="margin-top: 10px; border-radius: 8px;"></select>
+                        
+                        <div id="readerDivButtons" style="margin-top: 25px; display:flex; justify-content:center; gap:10px;">
+                            <button type="button" class="btn btn-primary" id="refreshList" onclick="Javascript:readersDropDownPopulate(false)">
+                                <span class="material-symbols-outlined">refresh</span> Actualizar Lista
+                            </button>
+                            <button type="button" class="btn btn-info" id="capabilities" data-toggle="modal" data-target="#myModal" onclick="Javascript:populatePopUpModal()">
+                                <span class="material-symbols-outlined">info</span> Ver Info
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Divs fantasma para respetar el espacio -->
-            <div style="height: 100px; width: 100%;"></div>
-            <div style="height: 100px; width: 100%;"></div>
-
-            <!-- CUADRO DERECHO REGISTRAR (Formatos y Formularios) -->
-            <div id="saveAndFormats-reg">
-                <form style ="border : solid grey;padding:5px; text-align:center;">
-                  <b>Formatos:</b><br>
-                  <table align="center">
-                    <tr data-toggle="tooltip" title="Se capturará en formato .png">
-                      <td>
-                        <input type="checkbox" checked="true" onclick="return false;"> PNG
-                      </td>
-                    </tr>
-                  </table>
-                </form>
-              
-                <!-- Campos Registrar: Colocados DENTRO del panel derecho (ID CLIENTE ELIMINADO) -->
-                <div class="sidebar-input-group" style="margin-top: 15px; text-align: left;">
-                    
-                    <label for="rut_cliente" style="font-weight: bold;">RUT del Cliente:</label>
-                    <input type="text" id="rut_cliente" class="form-control input-sm" placeholder="Ej: 12345678-9" maxlength="10">
-                    <span id="rut_error" style="display:none; color:red; font-weight:bold;">RUT inválido</span>
-                    
-                    <label for="nombre_cliente" style="font-weight: bold;">Nombre:</label>
-                    <input type="text" id="nombre_cliente" class="form-control input-sm" maxlength="50">
-                    
-                    <input type="button" class="btn btn-success btn-sm" style="width: 100%; white-space: normal;" value="Registrar Huella" onclick="registrarHuella()">
-                </div>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- 3. PESTAÑA: SELECTOR DE DISPOSITIVOS       -->
-        <!-- ========================================== -->
-        <div id="content-reader">  
-            <h4>Seleccione el Dispositivo:</h4>
-            <select class="form-control" id="readersDropDown" onchange="selectChangeEvent()">
-            </select>
-            <div id="readerDivButtons">
-                <table width=70% align="center">
-                        <tr>
-                            <td>
-                                <input type="button" class="btn btn-primary" id="refreshList" value="Actualizar Lista" 
-                                    onclick="Javascript:readersDropDownPopulate(false)">
-                            </td>
-                            <td>
-                                <input type="button" class="btn btn-primary" id="capabilities" value="Capacidades"
-                                data-toggle="modal" data-target="#myModal" onclick="Javascript:populatePopUpModal()">
-                            </td>  
-                        </tr>
-                </table>
-
-              <div class="modal fade" id="myModal" role="dialog">
+            <!-- Modal Info Lector -->
+            <div class="modal fade" id="myModal" role="dialog">
                 <div class="modal-dialog">
-                  <div class="modal-content" id="modalContent" >
-                    <div class="modal-header">
-                      <button type="button" class="close" data-dismiss="modal">&times;</button>
-                      <h4 class="modal-title">Información del Dispositivo</h4>
+                  <div class="modal-content" style="border-radius: 10px; overflow: hidden;">
+                    <div class="modal-header" style="background: #1e293b; color: white; border:none;">
+                      <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:1;">&times;</button>
+                      <h4 class="modal-title"><span class="material-symbols-outlined align-middle">memory</span> Información del Lector</h4>
                     </div>
-                    <div class="modal-body" id="ReaderInformationFromDropDown">
-                    </div>
-                    <div class="modal-footer">
+                    <div class="modal-body" id="ReaderInformationFromDropDown" style="font-size: 15px; color: #334155;"></div>
+                    <div class="modal-footer" style="border:none; background:#f8fafc;">
                       <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
         </div>
     </div>
@@ -235,6 +313,5 @@
     <script src="scripts/websdk.client.bundle.min.js"></script>
     <script src="scripts/fingerprint.sdk.min.js"></script>
     <script src="app.js"></script>
-        
 </body>
 </html>

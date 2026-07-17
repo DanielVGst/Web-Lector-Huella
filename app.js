@@ -607,13 +607,11 @@ function delayAnimate(id,visibility)
    document.getElementById(id).style.display = visibility;
 }
 
-// ============================================================================
-// INICIO DEL CÓDIGO AÑADIDO
-// ============================================================================
-
 // Configuración de Entorno
 const API_BASE_URL = "http://45.239.108.2:3001"; 
 const API_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjkyLCJwZXJmaWxfaWQiOjQxLCJpYXQiOjE3ODQxNTI5NTF9.bLa26R39PbtkAuOJgVBG4p1WOxexKd_u591TAX1Qdm0"; // Reemplaza esto con tu token textual largo
+
+let huellasCapturadas = []; 
 
 // --- LÓGICA DE INTERFAZ Y PESTAÑAS ---
 
@@ -643,15 +641,13 @@ function limpiarRegistrar() {
     if(vDivReg) vDivReg.innerHTML = "";
 }
 
-// --- VALIDACIONES Y FORMATEO EN TIEMPO REAL ---
+// --- VALIDACIONES Y FORMATEO ---
 
-// Lógica matemática del RUT
 function validarRUT(rut) {
     if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test(rut)) return false;
     let tmp = rut.split('-');
     let digitoVerificador = tmp[1].toLowerCase();
     let rutNumerico = parseInt(tmp[0], 10);
-    
     let m = 0, s = 1;
     for (; rutNumerico; rutNumerico = Math.floor(rutNumerico / 10)) {
         s = (s + rutNumerico % 10 * (9 - m++ % 6)) % 11;
@@ -660,19 +656,15 @@ function validarRUT(rut) {
     return dvEsperado === digitoVerificador;
 }
 
-//  Control en tiempo real del Input del RUT
 const rutInput = document.getElementById('rut_cliente');
 if (rutInput) {
     rutInput.addEventListener('input', function(e) {
         let valor = e.target.value.replace(/[^0-9kK]/g, '');
-        
         if (valor.length > 0) {
             let cuerpo = valor.slice(0, -1).replace(/[kK]/g, ''); 
-            let finalChar = valor.slice(-1);
-            
+            let finalChar = valor.slice(-1); 
             valor = (cuerpo + finalChar).substring(0, 9);
         }
-        
         if (valor.length > 1) {
             const cuerpo = valor.slice(0, -1);
             const dv = valor.slice(-1).toUpperCase();
@@ -680,28 +672,20 @@ if (rutInput) {
         } else {
             e.target.value = valor.toUpperCase();
         }
-
         const rutCompleto = e.target.value;
         const errorSpan = document.getElementById('rut_error');
-        if (rutCompleto.length > 0 && !validarRUT(rutCompleto)) {
-            errorSpan.style.display = 'inline';
-        } else {
-            errorSpan.style.display = 'none';
-        }
+        errorSpan.style.display = (rutCompleto.length > 0 && !validarRUT(rutCompleto)) ? 'inline' : 'none';
     });
 }
 
-//  Control en tiempo real del Input de ID Recepción (Max 5 números - 4 números)
 const recepcionInput = document.getElementById('id_recepcion');
 if (recepcionInput) {
     recepcionInput.addEventListener('input', function(e) {
         let valor = e.target.value.replace(/[^0-9-]/g, '');
-        
         let partes = valor.split('-');
-        let izquierda = partes[0].substring(0, 5);
-        
+        let izquierda = partes[0].substring(0, 5); 
         if (partes.length > 1) {
-            let derecha = partes.slice(1).join('').substring(0, 4);
+            let derecha = partes.slice(1).join('').substring(0, 4); 
             e.target.value = `${izquierda}-${derecha}`;
         } else {
             e.target.value = izquierda;
@@ -712,29 +696,21 @@ if (recepcionInput) {
 // --- SERVICIOS FETCH ---
 
 async function buscarEnrolamientoPorHuella(huella) {
-    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token de autenticación.');
-
+    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token.');
     const response = await fetch(`${API_BASE_URL}/enrolamientoHuella/buscar`, {
         method: "POST",
-        headers: {
-            'Authorization': `Bearer ${API_BEARER_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${API_BEARER_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ huella })
     });
-    if (!response.ok) throw new Error("Error al buscar la huella (Status: " + response.status + ")");
+    if (!response.ok) throw new Error("Error al buscar (Status: " + response.status + ")");
     return await response.json(); 
 }
 
 async function crearEnrolamientoHuella(data) {
-    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token de autenticación.');
-
+    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token.');
     const response = await fetch(`${API_BASE_URL}/enrolamientoHuella/registrar`, {
         method: "POST",
-        headers: {
-            'Authorization': `Bearer ${API_BEARER_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${API_BEARER_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
     if (!response.ok) throw new Error("Error al registrar (Status: " + response.status + ")");
@@ -742,124 +718,184 @@ async function crearEnrolamientoHuella(data) {
 }
 
 async function crearEnrolamientoHuellaRelacionado(data) {
-    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token de autenticación.');
-
+    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token.');
     const response = await fetch(`${API_BASE_URL}/enrolamientoHuella/registrar`, {
         method: "POST",
-        headers: {
-            'Authorization': `Bearer ${API_BEARER_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${API_BEARER_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
     if (!response.ok) throw new Error("Error al relacionar recepción (Status: " + response.status + ")");
     return await response.json();
 }
 
-// --- CONTROLADORES DE LOS BOTONES DE LA UI ---
+// --- MECÁNICA DE MÚLTIPLES HUELLAS ---
 
-// SIMULADOR DE ESCANEO (Testing)
+function actualizarMiniaturas() {
+    for (let i = 1; i <= 3; i++) {
+        const thumb = document.getElementById(`thumb-${i}`);
+        if (huellasCapturadas[i-1]) {
+            thumb.innerHTML = `<img src="${huellasCapturadas[i-1]}" />`;
+            thumb.style.borderColor = "#0ea5e9"; 
+            thumb.style.background = "#f0f9ff";
+        } else {
+            thumb.innerHTML = i;
+            thumb.style.borderColor = "#cbd5e1"; 
+            thumb.style.background = "#f8fafc";
+        }
+    }
+}
+
+function confirmarHuellaIndividual() {
+    const huellaActual = localStorage.getItem("imageSrc");
+    
+    if (!huellaActual) {
+        Swal.fire("Atención", "No has escaneado ninguna huella.", "warning");
+        return;
+    }
+    if (huellasCapturadas.length >= 3) {
+        Swal.fire("¡Listo!", "Ya capturaste las 3 tomas.", "info");
+        return;
+    }
+
+    huellasCapturadas.push(huellaActual);
+    actualizarMiniaturas();
+    
+    onClear();
+    limpiarRegistrar();
+
+    Swal.fire({
+        title: "Toma Exitosa",
+        text: `Llevas ${huellasCapturadas.length} de 3 tomas.`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function reiniciarTomas() {
+    huellasCapturadas = [];
+    actualizarMiniaturas();
+    onClear();
+    limpiarRegistrar();
+}
+
+// --- CONTROLADORES DE LA UI ---
+
 function simularHuella(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = function(e) {
         const base64Image = e.target.result;
         localStorage.setItem("imageSrc", base64Image);
-        
         const vDiv = document.getElementById('imagediv');
-        if (vDiv) {
-            vDiv.innerHTML = `<img id="image" src="${base64Image}" style="max-width: 100%;">`;
-        }
+        if (vDiv) vDiv.innerHTML = `<img id="image" src="${base64Image}" style="max-width: 100%;">`;
         event.target.value = "";
     };
     reader.readAsDataURL(file);
 }
 
-// Botón: Enviar Huella (Vista Firmar)
 async function enviarHuella() {
     const idRecepcion = document.getElementById("id_recepcion").value.trim();
     const huellaCruda = localStorage.getItem("imageSrc");
-
     const regexRecepcion = /^\d{1,5}-\d{4}$/;
 
     if (!idRecepcion || !regexRecepcion.test(idRecepcion)) {
-        alert("Atención: Ingrese un ID de Recepción válido (Ej: 209-2026).\nDebe contener hasta 5 números, seguido de un guion y 4 números para el año.");
-        return;
+        Swal.fire("Formato Inválido", "Ingrese un ID válido (Ej: 209-2026).", "warning"); return;
     }
     if (!huellaCruda) {
-        alert("Atención: No hay huella capturada. Por favor escanee o simule una huella primero.");
-        return;
+        Swal.fire("Sin Huella", "Por favor escanee la huella.", "warning"); return;
     }
 
     const huellaLimpia = huellaCruda.includes(",") ? huellaCruda.split(",")[1] : huellaCruda;
+    Swal.fire({ title: 'Verificando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
         const rawResponse = await buscarEnrolamientoPorHuella(huellaLimpia);
         const matchData = rawResponse.data ? rawResponse.data : rawResponse;
 
         if (matchData && matchData.match) {
-            const dtoRelacionado = {
-                huella: huellaLimpia,
-                nombre: matchData.nombre,
-                rut: matchData.rut,
-                type: "RECEPCION",
-                registroId: idRecepcion 
-            };
-
-            await crearEnrolamientoHuellaRelacionado(dtoRelacionado);
-
-            alert(`Firma Exitosa.\nCliente: ${matchData.nombre}\nRecepción: ${idRecepcion}`);
-            onClear(); 
-            document.getElementById("id_recepcion").value = "";
+            await crearEnrolamientoHuellaRelacionado({
+                huella: huellaLimpia, nombre: matchData.nombre, rut: matchData.rut,
+                type: "RECEPCION", registroId: parseInt(idRecepcion.replace('-', ''), 10)
+            });
+            Swal.fire("Firma Exitosa", `Cliente: ${matchData.nombre}\nRecepción: ${idRecepcion}`, "success");
+            onClear(); document.getElementById("id_recepcion").value = "";
         } else {
-            alert(`Firma Rechazada: ${matchData.mensaje || 'La huella no coincide con nuestros registros.'}`);
+            Swal.fire("Rechazada", matchData.mensaje || 'La huella no coincide.', "error");
         }
     } catch (error) {
-        console.error("Error en enviarHuella:", error);
-        alert(error.message || "Falla de red: No se pudo conectar al servidor.");
+        Swal.fire("Error de Conexión", "No se pudo conectar al servidor.", "error");
     }
 }
 
-// Botón: Registrar Huella (Vista Registrar)
 async function registrarHuella() {
     const rutCliente = document.getElementById("rut_cliente").value.trim();
     const nombreCliente = document.getElementById("nombre_cliente").value.trim();
-    const huellaCruda = localStorage.getItem("imageSrc");
 
-    if (!rutCliente || !nombreCliente) {
-        alert("Atención: Por favor, complete el RUT y Nombre.");
-        return;
-    }
-    if (!validarRUT(rutCliente)) {
-        alert("Atención: El RUT ingresado es inválido. Verifique el formato.");
-        return;
-    }
-    if (!huellaCruda) {
-        alert("Atención: No hay huella capturada. Por favor escanee o simule una huella primero.");
-        return;
+    if (!rutCliente || !nombreCliente) { Swal.fire("Faltan Datos", "Complete RUT y Nombre.", "warning"); return; }
+    if (!validarRUT(rutCliente)) { Swal.fire("RUT Inválido", "Verifique el formato.", "error"); return; }
+    
+    if (huellasCapturadas.length !== 3) { 
+        Swal.fire("Incompleto", "Captura las 3 tomas requeridas.", "warning"); 
+        return; 
     }
 
-    const huellaLimpia = huellaCruda.includes(",") ? huellaCruda.split(",")[1] : huellaCruda;
+    Swal.fire({ title: 'Registrando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
+        const huellasLimpias = huellasCapturadas.map(huella => 
+            huella.includes(",") ? huella.split(",")[1] : huella
+        );
+
         const dtoRegistro = {
-            huella: huellaLimpia,
+            huellas: huellasLimpias,
             nombre: nombreCliente,
             rut: rutCliente
         };
 
         await crearEnrolamientoHuella(dtoRegistro);
-
-        alert("Cliente y Huella registrados correctamente.");
-        onClear(); 
-        limpiarRegistrar(); 
         
-        document.getElementById("rut_cliente").value = "";
+        Swal.fire("Enrolamiento Exitoso", "El cliente ha sido registrado con sus 3 huellas biométricas.", "success");
+        reiniciarTomas();
+        document.getElementById("rut_cliente").value = ""; 
         document.getElementById("nombre_cliente").value = "";
     } catch (error) {
-        console.error("Error en registrarHuella:", error);
-        alert(error.message || "Falla de red: No se pudo conectar al servidor.");
+        console.error(error);
+        Swal.fire("Error", "Falla al registrar en el servidor.", "error");
     }
 }
+
+window.alert = function(message) {
+    Swal.fire({
+        title: "Aviso del Lector",
+        text: message,
+        icon: "info",
+        confirmButtonColor: '#0ea5e9'
+    });
+};
+
+window.showMessage = function(message) {
+    const globalStatusDiv = document.getElementById("global-status");
+    if (globalStatusDiv) {
+        if (message) {
+            globalStatusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">info</span> ${message}`;
+        } else {
+            globalStatusDiv.innerHTML = "";
+        }
+    }
+};
+
+window.disableEnable = function() {
+    if (myVal != "") {
+        disabled = false;
+        showMessage("");
+    } else {
+        disabled = true;
+        showMessage("Lector no seleccionado. Por favor asigne uno en la pestaña Dispositivos.");
+        onStop();
+    }
+};
+
+window.disableEnableStartStop = function() {
+};
