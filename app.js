@@ -681,15 +681,7 @@ if (rutInput) {
 const recepcionInput = document.getElementById('id_recepcion');
 if (recepcionInput) {
     recepcionInput.addEventListener('input', function(e) {
-        let valor = e.target.value.replace(/[^0-9-]/g, '');
-        let partes = valor.split('-');
-        let izquierda = partes[0].substring(0, 5); 
-        if (partes.length > 1) {
-            let derecha = partes.slice(1).join('').substring(0, 4); 
-            e.target.value = `${izquierda}-${derecha}`;
-        } else {
-            e.target.value = izquierda;
-        }
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 }
 
@@ -702,6 +694,11 @@ async function buscarEnrolamientoPorHuella(huella) {
         headers: { 'Authorization': `Bearer ${API_BEARER_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ huella })
     });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error del servidor (Status: ${response.status})`);
+    }
     if (!response.ok) throw new Error("Error al buscar (Status: " + response.status + ")");
     return await response.json(); 
 }
@@ -717,14 +714,25 @@ async function crearEnrolamientoHuella(data) {
     return await response.json();
 }
 
-async function crearEnrolamientoHuellaRelacionado(data) {
-    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token.');
-    const response = await fetch(`${API_BASE_URL}/enrolamientoHuella/registrar`, {
-        method: "POST",
-        headers: { 'Authorization': `Bearer ${API_BEARER_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+async function firmarRecepcionBackend(idRecepcion, base64Huella) {
+    if (!API_BEARER_TOKEN) throw new Error('No se configuró el token de autenticación.');
+
+    const response = await fetch(`${API_BASE_URL}/recepcionMuestra/${idRecepcion}`, {
+        method: "PATCH",
+        headers: {
+            'Authorization': `Bearer ${API_BEARER_TOKEN}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            firmaCliente: base64Huella,
+            type: "ENROLAMIENTO" 
+        })
     });
-    if (!response.ok) throw new Error("Error al relacionar recepción (Status: " + response.status + ")");
+    
+    if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || "Error al firmar la recepción en el servidor.");
+    }
     return await response.json();
 }
 
@@ -798,34 +806,38 @@ function simularHuella(event) {
 async function enviarHuella() {
     const idRecepcion = document.getElementById("id_recepcion").value.trim();
     const huellaCruda = localStorage.getItem("imageSrc");
-    const regexRecepcion = /^\d{1,5}-\d{4}$/;
+
+    const regexRecepcion = /^\d+$/;
 
     if (!idRecepcion || !regexRecepcion.test(idRecepcion)) {
-        Swal.fire("Formato Inválido", "Ingrese un ID válido (Ej: 209-2026).", "warning"); return;
+        alert("Atención: Ingrese un ID de Recepción válido (Ej: 209). Solo ingrese números.");
+        return;
     }
     if (!huellaCruda) {
-        Swal.fire("Sin Huella", "Por favor escanee la huella.", "warning"); return;
+        alert("Atención: No hay huella capturada. Por favor escanee o simule una huella primero.");
+        return;
     }
 
     const huellaLimpia = huellaCruda.includes(",") ? huellaCruda.split(",")[1] : huellaCruda;
-    Swal.fire({ title: 'Verificando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
         const rawResponse = await buscarEnrolamientoPorHuella(huellaLimpia);
         const matchData = rawResponse.data ? rawResponse.data : rawResponse;
 
         if (matchData && matchData.match) {
-            await crearEnrolamientoHuellaRelacionado({
-                huella: huellaLimpia, nombre: matchData.nombre, rut: matchData.rut,
-                type: "RECEPCION", registroId: parseInt(idRecepcion.replace('-', ''), 10)
-            });
-            Swal.fire("Firma Exitosa", `Cliente: ${matchData.nombre}\nRecepción: ${idRecepcion}`, "success");
-            onClear(); document.getElementById("id_recepcion").value = "";
+            
+            await firmarRecepcionBackend(idRecepcion, huellaLimpia);
+
+            alert(`Firma Exitosa.\nCliente: ${matchData.nombre}\nRecepción Firmada: #${idRecepcion}`);
+            
+            onClear(); 
+            document.getElementById("id_recepcion").value = "";
         } else {
-            Swal.fire("Rechazada", matchData.mensaje || 'La huella no coincide.', "error");
+            alert(`Firma Rechazada: ${matchData.mensaje || 'La huella no coincide con nuestros registros.'}`);
         }
     } catch (error) {
-        Swal.fire("Error de Conexión", "No se pudo conectar al servidor.", "error");
+        console.error("Error en enviarHuella:", error);
+        alert(error.message || "Falla de red: No se pudo conectar al servidor o la recepción no existe.");
     }
 }
 
@@ -849,20 +861,22 @@ async function registrarHuella() {
         );
 
         const dtoRegistro = {
-            huellas: huellasLimpias,
             nombre: nombreCliente,
-            rut: rutCliente
+            rut: rutCliente,
+            huella1: huellasLimpias[0],
+            huella2: huellasLimpias[1],
+            huella3: huellasLimpias[2]
         };
 
         await crearEnrolamientoHuella(dtoRegistro);
         
-        Swal.fire("Enrolamiento Exitoso", "El cliente ha sido registrado con sus 3 huellas biométricas.", "success");
+        Swal.fire("Enrolamiento Exitoso", "El cliente ha sido registrado con sus 3 huellas correctamente.", "success");
         reiniciarTomas();
         document.getElementById("rut_cliente").value = ""; 
         document.getElementById("nombre_cliente").value = "";
     } catch (error) {
-        console.error(error);
-        Swal.fire("Error", "Falla al registrar en el servidor.", "error");
+        console.error("Error DETALLADO:", error);
+        Swal.fire("Error", error.message, "error");
     }
 }
 
