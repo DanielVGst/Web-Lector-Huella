@@ -584,10 +584,6 @@ function delayAnimate(id,visibility)
    document.getElementById(id).style.display = visibility;
 }
 
-// Configuración de Entorno
-const API_BASE_URL = "http://45.239.108.2:3001"; 
-const API_BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjkyLCJwZXJmaWxfaWQiOjQxLCJpYXQiOjE3ODQxNTI5NTF9.bLa26R39PbtkAuOJgVBG4p1WOxexKd_u591TAX1Qdm0"; // Reemplaza esto con tu token textual largo
-
 let huellasCapturadas = []; 
 
 // --- LÓGICA DE INTERFAZ Y PESTAÑAS ---
