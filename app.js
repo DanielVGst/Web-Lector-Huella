@@ -115,10 +115,31 @@ function showMessage(message){
 window.onload = function () {
     localStorage.clear();
     test = new FingerprintSdkTest();
-    readersDropDownPopulate(true); //To populate readers for drop down selection
+    readersDropDownPopulate(true); // To populate readers for drop down selection
     disableEnable(); // Disabling enabling buttons - if reader not selected
     enableDisableScanQualityDiv("content-reader"); // To enable disable scan quality div
     disableEnableExport(true);
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const idRecepcionParam = urlParams.get('recepcion');
+    
+    if (idRecepcionParam) {
+        setTimeout(() => {
+            const inputRecepcion = document.getElementById('id_recepcion');
+            if (inputRecepcion) {
+                inputRecepcion.value = idRecepcionParam;
+                
+                inputRecepcion.readOnly = true; 
+                inputRecepcion.style.backgroundColor = "#f3f4f6";
+                inputRecepcion.style.cursor = "not-allowed";
+            }
+            
+            toggle_visibility(['content-capture', 'content-reader', 'content-registrar']);
+            setTabActive('Capture');
+            
+            showMessage(`Recepción #${idRecepcionParam} lista para firma.`);
+        }, 400); 
+    }
 };
 
 function onStart() {
@@ -801,10 +822,31 @@ async function enviarHuella() {
             
             await firmarRecepcionBackend(idRecepcion, huellaLimpia);
 
+            if (window.opener) {
+                window.opener.postMessage({ 
+                    accion: 'FIRMA_COMPLETADA', 
+                    idRecepcion: idRecepcion 
+                }, '*');
+            }
+
             alert(`Firma Exitosa.\nCliente: ${matchData.nombre}\nRecepción Firmada: #${idRecepcion}`);
             
             onClear(); 
             document.getElementById("id_recepcion").value = "";
+            
+            Swal.fire({
+                title: "¡Firma Exitosa!",
+                html: `Cliente: <b>${matchData.nombre}</b><br>
+                       Recepción: <b>#${idRecepcion}</b><br><br>`,
+                icon: "success",
+                timer: 5000, // 5000 milisegundos = 5 segundos
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false
+            }).then(() => {
+                window.close();
+            });
+
         } else {
             alert(`Firma Rechazada: ${matchData.mensaje || 'La huella no coincide con nuestros registros.'}`);
         }
