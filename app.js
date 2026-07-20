@@ -121,14 +121,9 @@ window.onload = function () {
     disableEnableExport(true);
 };
 
-
 function onStart() {
     assignFormat();
-    if(currentFormat == ""){
-        alert("Por favor selecciona un formato.")
-    }else{        
-        test.startCapture();
-    }
+    test.startCapture(); 
 }
 
 function onStop() {
@@ -561,26 +556,8 @@ with(document.myForm)
   }
 }         
 
-function assignFormat(){
-    currentFormat = "";
-    with(document.myForm){
-        for(i = 0; i < elements.length; i++){
-            if(elements[i].checked == true){
-                if(elements[i].name == "Raw"){
-                    currentFormat = Fingerprint.SampleFormat.Raw;
-                }
-                if(elements[i].name == "Intermediate"){
-                    currentFormat = Fingerprint.SampleFormat.Intermediate;
-                }
-                if(elements[i].name == "Compressed"){
-                    currentFormat = Fingerprint.SampleFormat.Compressed;
-                }
-                if(elements[i].name == "PngImage"){
-                    currentFormat = Fingerprint.SampleFormat.PngImage;
-                }
-            }
-        }
-    }
+function assignFormat() {
+    currentFormat = Fingerprint.SampleFormat.PngImage;
 }
 
 
