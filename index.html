@@ -84,7 +84,7 @@
             box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
         }
 
-        #imagediv, #imagediv-registrar {
+        #imagediv, #imagediv-registrar, #imagediv-consultar {
             padding: 0px; margin: 0 auto;
             width: 450px; height: 450px;
             border: 2px dashed #cbd5e1;
@@ -92,8 +92,8 @@
             display: table;
             background: #f8fafc;
         }
-        #imagediv div, #imagediv-registrar div { display: table-cell; vertical-align: middle; background: transparent; }
-        #imagediv img, #imagediv-registrar img { width: 100%; height: auto; max-height: 450px; }
+        #imagediv div, #imagediv-registrar div, #imagediv-consultar div { display: table-cell; vertical-align: middle; background: transparent; }
+        #imagediv img, #imagediv-registrar img, #imagediv-consultar img { width: 100%; height: auto; max-height: 450px; }
 
         .visor-huellas-container {
             display: flex; justify-content: space-between;
@@ -122,16 +122,20 @@
             </div>
             <ul class="nav navbar-nav">
               <li id="Reader" class="active">
-                <a href="#" onclick="toggle_visibility(['content-reader','content-capture','content-registrar']); setTabActive('Reader')">
+                <a href="#" onclick="toggle_visibility(['content-reader','content-capture','content-registrar','content-consultar']); setTabActive('Reader')">
                     <span class="material-symbols-outlined align-middle">settings_input_component</span> Dispositivos</a>
               </li>
               <li id="Capture" class="">
-                <a href="#" onclick="toggle_visibility(['content-capture','content-reader','content-registrar']); setTabActive('Capture')">
+                <a href="#" onclick="toggle_visibility(['content-capture','content-reader','content-registrar','content-consultar']); setTabActive('Capture')">
                     <span class="material-symbols-outlined align-middle">edit_document</span> Firmar Recepción</a>
               </li>
               <li id="RegistrarTab" class="">
-                <a href="#" onclick="toggle_visibility(['content-registrar','content-capture','content-reader']); setTabActive('RegistrarTab')">
+                <a href="#" onclick="toggle_visibility(['content-registrar','content-capture','content-reader','content-consultar']); setTabActive('RegistrarTab')">
                     <span class="material-symbols-outlined align-middle">person_add</span> Registrar Cliente</a>
+              </li>
+              <li id="ConsultarTab" class="">
+                <a href="#" onclick="toggle_visibility(['content-consultar','content-registrar','content-capture','content-reader']); setTabActive('ConsultarTab')">
+                    <span class="material-symbols-outlined align-middle">person_search</span> Consultar Cliente</a>
               </li>
             </ul>
           </div>
@@ -257,6 +261,46 @@
 
                             <button type="button" class="btn btn-success btn-lg btn-block" onclick="registrarHuella()" id="btn-registrar-final" style="margin-top: 15px;">
                                 <span class="material-symbols-outlined">person_add</span> Enrolar Cliente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA: CONSULTAR HUELLA -->
+        <div id="content-consultar" style="display : none; padding: 0 20px;">    
+            <div class="row">
+                <div class="col-md-7 text-center">
+                    <div id="imagediv-consultar"></div>
+                    <div id="contentButtons-consultar" style="margin-top: 20px;">
+                        <input type="button" class="btn btn-default" value="Limpiar" onclick="Javascript:onClear(); limpiarConsultar();">
+                        <button type="button" class="btn btn-primary" onclick="Javascript:onStart()">
+                            <span class="material-symbols-outlined">sensors</span> Activar Escáner
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="Javascript:onStop()">
+                            <span class="material-symbols-outlined">cancel</span> Parar
+                        </button>
+                        <label class="btn btn-warning btn-sm" style="font-weight: 500; cursor: pointer; height: 34.2px;">
+                            <span class="material-symbols-outlined">upload_file</span> Subir Imagen 
+                            <input type="file" accept="image/*" style="display: none;" onchange="simularHuella(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="panel-derecho" style="text-align: center;">
+                        <h4 style="margin-top: 0; color: #1e293b; border-bottom: 2px solid #0ea5e9; padding-bottom: 8px; font-weight:bold;">
+                            <span class="material-symbols-outlined align-middle">person_search</span> Consultar Identidad
+                        </h4>
+                        
+                        <div style="margin-top: 30px;">
+                            <p style="color: #64748b; font-size: 15px; margin-bottom: 30px;">
+                                Escanea una huella y presiona consultar para verificar si el cliente ya está registrado.
+                            </p>
+                            
+                            <button type="button" class="btn btn-success btn-lg btn-block" onclick="consultarHuella()">
+                                <span class="material-symbols-outlined">search</span> Consultar Huella
                             </button>
                         </div>
                     </div>

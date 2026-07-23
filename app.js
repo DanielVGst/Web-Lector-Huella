@@ -9,23 +9,23 @@ var startEnroll = false;
 
 var currentFormat = Fingerprint.SampleFormat.PngImage;
 var deviceTechn = {
-               0: "Unknown",
-               1: "Optical",
-               2: "Capacitive",
-               3: "Thermal",
-               4: "Pressure"
+               0: "Desconocido",
+               1: "Óptico",
+               2: "Capacitivo",
+               3: "Térmico",
+               4: "Presión"
             }
 
 var deviceModality = {
-               0: "Unknown",
-               1: "Swipe",
-               2: "Area",
-               3: "AreaMultifinger"
+               0: "Desconocido",
+               1: "Deslizamiento (Swipe)",
+               2: "Área",
+               3: "Área Multidedo"
             }
 
 var deviceUidType = {
-               0: "Persistent",
-               1: "Volatile"
+               0: "Persistente",
+               1: "Volátil"
             }
 
 var FingerprintSdkTest = (function () {
@@ -174,9 +174,9 @@ function onDeviceInfo(id, element){
             //console.log(Fingerprint.DeviceUidType[sucessObj.eUidType]);
             var retutnVal = //"Device Info -"
                  "Id : " +  deviceId
-                +"<br> Uid Type : "+ uidTyp
-                +"<br> Device Tech : " +  deviceTech
-                +"<br> Device Modality : " +  modality;
+                +"<br> Tipo UID : "+ uidTyp
+                +"<br> Tecnología : " +  deviceTech
+                +"<br> Modalidad : " +  modality;
 
             document.getElementById(element).innerHTML = retutnVal;
 
@@ -216,7 +216,7 @@ function toggle_visibility(ids) {
 
 $("#save").on("click",function(){
     if(localStorage.getItem("imageSrc") == "" || localStorage.getItem("imageSrc") == null || document.getElementById('imagediv').innerHTML == ""){
-        alert("Error -> Fingerprint not available");
+        alert("Error -> Huella no disponible");
     }else{
         var vDiv = document.getElementById('imageGallery');
         if(vDiv.children.length < 5){
@@ -280,7 +280,7 @@ function sampleAcquired(s){
                 var decodedData = JSON.parse(Fingerprint.b64UrlToUtf8(sampleData));
                 localStorage.setItem("raw", Fingerprint.b64UrlTo64(decodedData.Data));
 
-                var vDiv = document.getElementById('imagediv').innerHTML = '<div id="animateText" style="display:none">RAW Sample Acquired <br>'+Date()+'</div>';
+                var vDiv = document.getElementById('imagediv').innerHTML = '<div id="animateText" style="display:none">Muestra RAW Capturada <br>'+Date()+'</div>';
                 setTimeout('delayAnimate("animateText","table-cell")',100); 
 
                 disableEnableExport(false);
@@ -297,7 +297,7 @@ function sampleAcquired(s){
                 var decodedData = JSON.parse(Fingerprint.b64UrlToUtf8(sampleData));
                 localStorage.setItem("wsq","data:application/octet-stream;base64," + Fingerprint.b64UrlTo64(decodedData.Data));
 
-                var vDiv = document.getElementById('imagediv').innerHTML = '<div id="animateText" style="display:none">WSQ Sample Acquired <br>'+Date()+'</div>';
+                var vDiv = document.getElementById('imagediv').innerHTML = '<div id="animateText" style="display:none">Muestra WSQ Capturada <br>'+Date()+'</div>';
                 setTimeout('delayAnimate("animateText","table-cell")',100);   
 
                 disableEnableExport(false);
@@ -312,14 +312,14 @@ function sampleAcquired(s){
                 var sampleData = Fingerprint.b64UrlTo64(samples[0].Data);
                 localStorage.setItem("intermediate", sampleData);
 
-                var vDiv = document.getElementById('imagediv').innerHTML = '<div id="animateText" style="display:none">Intermediate Sample Acquired <br>'+Date()+'</div>';
+                var vDiv = document.getElementById('imagediv').innerHTML = '<div id="animateText" style="display:none">Muestra Intermedia Capturada <br>'+Date()+'</div>';
                 setTimeout('delayAnimate("animateText","table-cell")',100); 
 
                 disableEnableExport(false);
             }
 
             else{
-                alert("Format Error");
+                alert("Error de Formato");
                 //disableEnableExport(true);
             }    
 }
@@ -454,7 +454,7 @@ function setActive(element1,element2){
 function onImageDownload(){
     if(currentFormat == Fingerprint.SampleFormat.PngImage){
         if(localStorage.getItem("imageSrc") == "" || localStorage.getItem("imageSrc") == null || document.getElementById('imagediv').innerHTML == "" ){
-           alert("No image to download");
+           alert("No hay imagen para descargar");
         }else{
             //alert(localStorage.getItem("imageSrc"));
             downloadURI(localStorage.getItem("imageSrc"), "sampleImage.png", "image/png");
@@ -463,7 +463,7 @@ function onImageDownload(){
 
     else if(currentFormat == Fingerprint.SampleFormat.Compressed){
          if(localStorage.getItem("wsq") == "" || localStorage.getItem("wsq") == null || document.getElementById('imagediv').innerHTML == "" ){
-           alert("WSQ data not available.");
+           alert("Datos WSQ no disponibles.");
         }else{
             downloadURI(localStorage.getItem("wsq"), "compressed.wsq","application/octet-stream");
         }
@@ -471,7 +471,7 @@ function onImageDownload(){
 
     else if(currentFormat == Fingerprint.SampleFormat.Raw){
          if(localStorage.getItem("raw") == "" || localStorage.getItem("raw") == null || document.getElementById('imagediv').innerHTML == "" ){
-           alert("RAW data not available.");
+           alert("Datos RAW no disponibles.");
         }else{
 
             downloadURI("data:application/octet-stream;base64,"+localStorage.getItem("raw"), "rawImage.raw", "application/octet-stream");
@@ -480,7 +480,7 @@ function onImageDownload(){
 
     else if(currentFormat == Fingerprint.SampleFormat.Intermediate){
          if(localStorage.getItem("intermediate") == "" || localStorage.getItem("intermediate") == null || document.getElementById('imagediv').innerHTML == "" ){
-           alert("Intermediate data not available.");
+           alert("Datos intermedios no disponibles.");
         }else{
 
             downloadURI("data:application/octet-stream;base64,"+localStorage.getItem("intermediate"), "FeatureSet.bin", "application/octet-stream");
@@ -488,7 +488,7 @@ function onImageDownload(){
     }
 
     else{
-        alert("Nothing to download.");
+        alert("Nada para descargar.");
     }
 }
 
@@ -610,7 +610,7 @@ let huellasCapturadas = [];
 // --- LÓGICA DE INTERFAZ Y PESTAÑAS ---
 
 function setTabActive(activeId) {
-    const tabs = ['Reader', 'Capture', 'RegistrarTab'];
+    const tabs = ['Reader', 'Capture', 'RegistrarTab', 'ConsultarTab'];
     tabs.forEach(tab => {
         const el = document.getElementById(tab);
         if(el) el.className = (tab === activeId) ? "active" : "";
@@ -618,9 +618,11 @@ function setTabActive(activeId) {
 }
 
 setInterval(() => {
+    const imgSrc = localStorage.getItem("imageSrc");
+    
+    // Dibujar en Registrar
     const stateReg = document.getElementById('content-registrar');
     if (stateReg && stateReg.style.display === 'block') {
-        const imgSrc = localStorage.getItem("imageSrc");
         const vDivReg = document.getElementById('imagediv-registrar');
         if (!imgSrc) {
             vDivReg.innerHTML = "";
@@ -628,11 +630,27 @@ setInterval(() => {
             vDivReg.innerHTML = `<img id="image-reg" src="${imgSrc}" style="max-width: 100%;">`;
         }
     }
+
+    // Dibujar en Consultar
+    const stateCons = document.getElementById('content-consultar');
+    if (stateCons && stateCons.style.display === 'block') {
+        const vDivCons = document.getElementById('imagediv-consultar');
+        if (!imgSrc) {
+            vDivCons.innerHTML = "";
+        } else if (vDivCons.innerHTML === "" || !vDivCons.querySelector('img') || vDivCons.querySelector('img').src !== imgSrc) {
+            vDivCons.innerHTML = `<img id="image-cons" src="${imgSrc}" style="max-width: 100%;">`;
+        }
+    }
 }, 300);
 
 function limpiarRegistrar() {
     const vDivReg = document.getElementById('imagediv-registrar');
     if(vDivReg) vDivReg.innerHTML = "";
+}
+
+function limpiarConsultar() {
+    const vDivCons = document.getElementById('imagediv-consultar');
+    if(vDivCons) vDivCons.innerHTML = "";
 }
 
 // --- VALIDACIONES Y FORMATEO ---
@@ -848,11 +866,21 @@ async function enviarHuella() {
             });
 
         } else {
-            alert(`Firma Rechazada: ${matchData.mensaje || 'La huella no coincide con nuestros registros.'}`);
+            Swal.fire({
+                title: "Firma Rechazada",
+                text: matchData.mensaje || "La huella no coincide con nuestros registros.",
+                icon: "error",
+                confirmButtonColor: "#ef4444"
+            });
         }
     } catch (error) {
         console.error("Error en enviarHuella:", error);
-        alert(error.message || "Falla de red: No se pudo conectar al servidor o la recepción no existe.");
+        Swal.fire({
+            title: "Error de Conexión",
+            text: error.message || "Falla de red: No se pudo conectar al servidor o la recepción no existe.",
+            icon: "error",
+            confirmButtonColor: "#ef4444"
+        });
     }
 }
 
@@ -928,3 +956,49 @@ window.disableEnable = function() {
 
 window.disableEnableStartStop = function() {
 };
+
+async function consultarHuella() {
+    const huellaCruda = localStorage.getItem("imageSrc");
+
+    if (!huellaCruda) {
+        Swal.fire("Atención", "No hay huella capturada. Por favor escanee una huella primero.", "warning");
+        return;
+    }
+
+    Swal.fire({ title: 'Buscando en la base de datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    const huellaLimpia = huellaCruda.includes(",") ? huellaCruda.split(",")[1] : huellaCruda;
+
+    try {
+        const rawResponse = await buscarEnrolamientoPorHuella(huellaLimpia);
+        const matchData = rawResponse.data ? rawResponse.data : rawResponse;
+
+        if (matchData && matchData.match) {
+            Swal.fire({
+                title: "¡Cliente Encontrado!",
+                html: `Esta huella pertenece a:<br><br>
+                       <b>Nombre:</b> ${matchData.nombre}<br>
+                       <b>RUT:</b> ${matchData.rut || 'No especificado'}`,
+                icon: "success",
+                confirmButtonColor: "#0ea5e9"
+            });
+            onClear();
+            limpiarConsultar();
+        } else {
+            Swal.fire({
+                title: "No Registrado",
+                text: matchData.mensaje || "Esta huella no coincide con ningún cliente en el sistema.",
+                icon: "error",
+                confirmButtonColor: "#ef4444"
+            });
+        }
+    } catch (error) {
+        console.error("Error en consultarHuella:", error);
+        Swal.fire({
+            title: "Error de Búsqueda",
+            text: error.message || "No se pudo conectar al servidor para verificar la huella.",
+            icon: "error",
+            confirmButtonColor: "#ef4444"
+        });
+    }
+}
